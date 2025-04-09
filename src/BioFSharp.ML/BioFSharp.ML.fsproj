@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Timo Mühlhaus, David Zimmer, Kevin Schneider, F# open source contributors</Authors>
+    <Description>Machine learning with BioFSharp and CNTK.Net.</Description>
+    <Summary>
+      Make your workflow ML ready with BioFSharp.ML.
+      Currently contains wrapper functions for CNTK
+      and a pre-trained model we used in our publication
+      about predicting peptide observability.
+    </Summary>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://BioFSharp.github.io/BioFSharp.ML/</PackageProjectUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>bioinformatics F# fsharp statistic biostatistics datascience</PackageTags>
+    <RepositoryUrl>https://github.com/BioFSharp/BioFSharp.ML</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <FsDocsLicenseLink>https://github.com/BioFSharp/BioFSharp.ML/blob/main/LICENSE</FsDocsLicenseLink>
+    <FsDocsReleaseNotesLink>https://github.com/BioFSharp/BioFSharp.ML/blob/main/RELEASE_NOTES.md</FsDocsReleaseNotesLink>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\img\icon.png" Pack="true" PackagePath="" />
+    <None Include="BioFSharp.ML.fsx" />
+    <None Include="CNTKLoadScript.fsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Compile Include="CNTK.fs" />
+    <Compile Include="DPPOP.fs" />
+    <!-- Resources -->
+    <EmbeddedResource Include="Resources\Chlamy5Times128.model" />
+    <EmbeddedResource Include="Resources\Yeast5Times128.model" />
+    <None Include="Scripts\CNTK.fsx" />
+    <None Include="Scripts\DPPOP.fsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BioFSharp" Version="2.0.0-preview.3" />
+    <PackageReference Include="BioFSharp.IO" Version="2.0.0-preview.3" />
+    <PackageReference Include="FSharpAux" Version="2.0.0" />
+    <PackageReference Include="FSharpAux.IO" Version="2.0.0" />
+    <PackageReference Include="CNTK.CPUOnly" Version="2.8.0-rc0.dev20200201" />
+  </ItemGroup>
+</Project>

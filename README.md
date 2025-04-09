@@ -1,4 +1,4 @@
-# BioFSharp.XYZ
+# BioFSharp.ML
 
 ![Logo](docs/img/Logo_large.png)
 
@@ -6,8 +6,8 @@ A template repository for creating an extension package for BioFSharp.
 
 ## Content
 
-- `src/BioFSharp.XYZ`: The main project folder. Contains a library with BioFSharp core dependency.
-- `tests/BioFSharp.XYZ.Tests`: The test project folder. Contains a XUnit test project
+- `src/BioFSharp.ML`: The main project folder. Contains a library with BioFSharp core dependency.
+- `tests/BioFSharp.ML.Tests`: The test project folder. Contains a XUnit test project
 - `build/build.fsproj`: A FAKE build project that handles building, testing, packaging, publishing, etc.
 - `docs`: the docs folder contains an example index.fsx file with simple documentation boilerplate.
 
@@ -20,16 +20,16 @@ Here is a list of things you should/might want to do after setting up a repo wit
 
 - Rename some things: Replace `XYZ` with the name of your package
   - `PackageTemplate.sln`
-  - `src/BioFSharp.XYZ`
-  - `src/BioFSharp.XYZ/BioFSharp.XYZ.fsproj`
+  - `src/BioFSharp.ML`
+  - `src/BioFSharp.ML/BioFSharp.ML.fsproj`
     - Rename and add nuget package metadata
-  - `tests/BioFSharp.XYZ`
-  - `tests/BioFSharp.XYZ.Tests/BioFSharp.XYZ.Tests.fsproj`
-    - Also make sure to fix the project reference to BioFSharp.XYZ when renamed
+  - `tests/BioFSharp.ML`
+  - `tests/BioFSharp.ML.Tests/BioFSharp.ML.Tests.fsproj`
+    - Also make sure to fix the project reference to BioFSharp.ML when renamed
   - in `build/ProjectInfo.fs`:
     - Set project name: 
       ```fsharp
-      let project = "BioFSharp.XYZ" // replace with the name of your project
+      let project = "BioFSharp.ML" // replace with the name of your project
       ```
     - Set git owner:
       ```fsharp
@@ -39,7 +39,7 @@ Here is a list of things you should/might want to do after setting up a repo wit
       ```fsharp
       let testProjects = 
       [
-          "tests/BioFSharp.XYZ.Tests/BioFSharp.XYZ.Tests.fsproj" // replace with the name of your test project
+          "tests/BioFSharp.ML.Tests/BioFSharp.ML.Tests.fsproj" // replace with the name of your test project
       ]
       ```
   - in `.github/workflows/build-and-test.yml`: change codecov slug
