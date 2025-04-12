@@ -1,4 +1,4 @@
-# BioFSharp.ML
+﻿# BioFSharp.ML
 
 ![Logo](docs/img/Logo_large.png)
 
@@ -45,19 +45,62 @@ Here is a list of things you should/might want to do after setting up a repo wit
   - in `.github/workflows/build-and-test.yml`: change codecov slug
 - If needed, change the target framework of the project. it currently targets `.netstandard2.0` for maximum backwards compatibility, might want to target a newer `.net` version if you need a specific API.
 
-## Build
+## Development
 
-This repo contains a buildproject that can be called either via `build.cmd`, `build.sh`, or directly via `dotnet run`.
+### General
 
-Find all build targets in `build/Build.fs`.
+BioFSharp repositories usually folllow this structure:
 
-Examples:
+```
+root
+│   📄<project name>.sln
+│   📄build.cmd
+│   📄build.sh
+├───📁build
+├───📁docs
+├───📁src
+|   └───📁<project name>
+└───tests
+    └───📁<testproject name>
+```
 
-- run the default build target (`Build`) via build.cmd:
-  ```bash
-  ./build.cmd
-  ```
-- run the `RunTests` target in build.sh:     
-  ```bash
-  ./build.sh RunTests
-  ```
+- <project name>.sln is the root solution file.
+- `build` contains a [FAKE](https://fake.build/) build project with targets for building, testing and packaging the project.
+- `build/sh` and `build.cmd` in the root are shorthand scripts to execute the buildproject.
+- `docs` contains the documentation in form of literate scripts and notebooks. 
+- `src` contains folders with the source code of the project(s).
+- `tests` contains folders with test projects.
+
+### Build
+
+just call `build.sh` or `build.cmd` depending on your OS.
+
+### Test
+
+```bash
+build.sh runtests
+```
+
+```bash
+build.cmd runtests
+```
+
+### Create Nuget package
+
+```bash
+build.sh pack
+```
+```bash
+build.cmd pack
+```
+
+### Docs
+
+You can watch locally with hot reload via
+
+```bash
+build.sh watchdocs
+```
+```bash
+build.cmd watchdocs
+```
