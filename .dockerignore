@@ -1,0 +1,13 @@
+.git
+.github
+.vs
+.vscode
+.fake
+**/bin
+**/obj
+artifacts/*
+!artifacts/legacy-runtime/
+!artifacts/legacy-runtime/imlp-1.0.0/
+!artifacts/legacy-runtime/imlp-1.0.0/legacy-runtime.tar.gz
+!artifacts/legacy-runtime/imlp-1.0.0/runtime-manifest.json
+!artifacts/legacy-runtime/imlp-1.0.0/SHA256SUMS
