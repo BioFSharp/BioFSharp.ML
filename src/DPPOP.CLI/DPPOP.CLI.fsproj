@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dppop</ToolCommandName>
+    <AssemblyName>DPPOP.CLI</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Timo Muehlhaus, David Zimmer, Kevin Schneider, F# open source contributors</Authors>
+    <Description>CLI wrapper for DPPOP peptide observability prediction based on BioFSharp.ML.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/BioFSharp/BioFSharp.ML/</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>bioinformatics proteomics peptide-observability cntk cli fsharp</PackageTags>
+    <RepositoryUrl>https://github.com/BioFSharp/BioFSharp.ML</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <Compile Include="CLIArgs.fs" />
+    <Compile Include="Input.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BioFSharp.ML\BioFSharp.ML.fsproj" />
+    <PackageReference Include="Argu" Version="6.2.5" />
+  </ItemGroup>
+
+</Project>

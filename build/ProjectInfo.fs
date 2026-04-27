@@ -8,6 +8,7 @@ let project = "BioFSharp.ML"
 let testProjects = 
     [
         "tests/BioFSharp.ML.Tests/BioFSharp.ML.Tests.fsproj"
+        "tests/DPPOP.Tests/DPPOP.Tests.fsproj"
     ]
 
 let solutionFile  = $"{project}.sln"
