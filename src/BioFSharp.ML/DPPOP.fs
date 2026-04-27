@@ -1,4 +1,6 @@
 namespace BioFSharp.ML
+open BioFSharp.FileFormats
+open BioFSharp.IO
 
 ///DPPOP - DeeP Peptide Observability Predictor.
 ///
@@ -320,7 +322,7 @@ module DPPOP =
                 | Field AminoAcidSymbol.Arg -> Array.get (   [| -0.0206030273840874 ; -0.0245971841699276 ; -0.0427821442802085 ; -0.0566332092070675 ; -0.0559191548111558 ; -0.0455394380519306 ; -0.0541455813655727 ; -0.0538609149609292 ; 0.0112126601842253 ; |] ) index     
                 | Field AminoAcidSymbol.Ser -> Array.get (   [| -0.00414728931498034 ; -0.00607359115820411 ; 0.00688957312924048 ; -0.00101967408837821 ; 0.00155119425371577 ; -0.00188774397621617 ; -0.00179609780733301 ; 0.00120217171057805 ; 0.0 ; |] ) index        
                 | Field AminoAcidSymbol.Thr -> Array.get (   [| 0.0115728837855243 ; 0.00871709724548706 ; 0.00208777500908572 ; 3.77150826628033e-06 ; 0.00437580160216219 ; 0.00526322191736816 ; -0.0022521384724719 ; 0.00746782714495857 ; 0.0 ; |] ) index     
-                | Field AminoAcidSymbol.Sel -> 0.
+                | Field AminoAcidSymbol.Sec -> 0.
                 | Field AminoAcidSymbol.Val -> Array.get (   [| 0.00681194613657833 ; 0.0173429094275379 ; 0.00479136512294075 ; 0.00825865300614361 ; 0.00493316169438667 ; 0.00417320066605687 ; 0.00917321806055152 ; 0.00952970722162894 ; 0.0 ; |] ) index        
                 | Field AminoAcidSymbol.Trp -> Array.get (   [| 0.0306856368818309 ; 0.00282917821310596 ; 0.00730387808155344 ; 0.0120257729838156 ; 0.00693320815473958 ; 0.0181272910523906 ; 0.0254494100003613 ; 0.0354451553685568 ; 0.0 ; |] ) index    
                 | Field AminoAcidSymbol.Tyr -> Array.get (   [| 0.0194284810017644 ; 0.0127667737830556 ; 0.00498714111480968 ; 0.00476543997301542 ; -0.00523499887692041 ; 0.0152488432689032 ; 0.0194801608035318 ; 0.0168451463172139 ; 0.0 ; |] ) index   
@@ -357,7 +359,7 @@ module DPPOP =
                 | Field AminoAcidSymbol.Arg -> Array.get (   [| 0.0839923310796518 ; 0.098149568952218 ; 0.15594940772927 ; 0.193963194795178 ; 0.192111114311861 ; 0.163886132848834 ; 0.187463071487379 ; 0.186710603099994 ; -0.0557364696622383 ; |] ) index
                 | Field AminoAcidSymbol.Ser -> Array.get (   [| 0.0186037055032237 ; 0.026922998856415 ; -0.0332190722669007 ; 0.00466508103872825 ; -0.00721584368297066 ; 0.00858895217038756 ; 0.00817672965188891 ; -0.00557951790496735 ; 0.0 ; |] ) index
                 | Field AminoAcidSymbol.Thr -> Array.get (   [| -0.0576769689205623 ; -0.0425687027718217 ; -0.00974617373848127 ; -1.73687197929421e-05 ; -0.0207404654555115 ; -0.0250966660897753 ; 0.0102232743918174 ; -0.0361514776936105 ; 0.0 ; |] ) index
-                | Field AminoAcidSymbol.Sel -> 0.
+                | Field AminoAcidSymbol.Sec -> 0.
                 | Field AminoAcidSymbol.Val -> Array.get (   [| -0.0328272141698239 ; -0.0902410077930348 ; -0.0227738520402987 ; -0.0402005991445456 ; -0.0234703056642569 ; -0.0197532660165449 ; -0.0449401919765487 ; -0.0468044755798308 ; 0.0 ; |] ) index
                 | Field AminoAcidSymbol.Trp -> Array.get (   [| -0.178586262592309 ; -0.0132720175157153 ; -0.0353176592986856 ; -0.0601313220751986 ; -0.0334395263233619 ; -0.0948976405530249 ; -0.141415693210588 ; -0.215820560584245 ; 0.0 ; |] ) index 
                 | Field AminoAcidSymbol.Tyr -> Array.get (   [| -0.1027532603019 ; -0.0641827923770768 ; -0.0237357867488708 ; -0.0226466622914581 ; 0.0233253947565591 ; -0.0780881261688707 ; -0.103068708688225 ; -0.0873159356295266 ; 0.0 ; |] ) index
@@ -472,10 +474,10 @@ module DPPOP =
             |> digestTrypticWith 0 6 
 
         ///Returns a distinct set of peptides that map uniquely to a single protein from the given fasta input
-        let getDistinctTrypticPeptidesFromFasta (fa:seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>)= 
+        let getDistinctTrypticPeptidesFromFasta (fa:seq<Fasta.FastaItem<AminoAcids.AminoAcid>>)= 
             //fileDir + "Chlamy_Cp.fastA"
             fa
-            |> Seq.map (fun fi -> fi.Sequence |> Array.filter (not << AminoAcids.isTerminator))
+            |> Seq.map (fun fi -> fi.Sequence |> Array.ofSeq |> Array.filter (not << AminoAcids.isTerminator))
             |> Seq.map digestTryptic
             |> Seq.collect (fun dig -> dig |> Seq.map BioArray.toString |> Set.ofSeq |> Set.toSeq)
             |> Seq.countBy id
@@ -487,7 +489,7 @@ module DPPOP =
         let getDistinctTrypticPeptidesFromFastaFile (filePath: string) = 
             //fileDir + "Chlamy_Cp.fastA"
             filePath
-            |> FastA.fromFile BioArray.ofAminoAcidString
+            |> Fasta.read BioArray.ofAminoAcidString
             |> getDistinctTrypticPeptidesFromFasta
 
         ///returns a map mapping from a (proteinID*sequence) touple to the three digestion efficiency scores in the form of a (float*float*float) tuple
@@ -536,10 +538,10 @@ module DPPOP =
         //    |> Seq.map calc
 
         ///returns a map mapping from a (proteinID*sequence) touple to the three digestion efficiency scores in the form of a (float*float*float) tuple from the input fasta item collection
-        let createDigestionEfficiencyMapFromFasta (fa:seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>) = 
+        let createDigestionEfficiencyMapFromFasta (fa:seq<Fasta.FastaItem<AminoAcids.AminoAcid>>) = 
             fa
-            |> Seq.map (fun fi -> {fi with Sequence=fi.Sequence |> Array.filter (not << AminoAcids.isTerminator)})
-            |> Seq.collect (fun fi -> getDigestionEfficiency fi.Header fi.Sequence)
+            |> Seq.map (fun fi -> {fi with Sequence=fi.Sequence |> Array.ofSeq |> Array.filter (not << AminoAcids.isTerminator)})
+            |> Seq.collect (fun fi -> getDigestionEfficiency fi.Header (Array.ofSeq fi.Sequence))
             |> Map.ofSeq
 
         ///get the physicochemical properties of a peptide: length, MolecularWeight, NetCharge, PositiveCharge, NegativeCharge, piI, Relative frewuencies of polar, hydrophobic, and negatively charge amino acids
@@ -774,7 +776,14 @@ module DPPOP =
             res
 
         ///Returns relative observability scores for uniquely mapping peptides of proteins of interest given a model, normalization procedure for features, and the proteome of the organism.
-        let scoreProteinsAgainstProteome (model:Model) (featureNormalization: PredictionInput -> PredictionInput) (proteome: seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>) (proteinsOfInterest: seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>)  =
+        let scoreProteinsAgainstProteome 
+            (model:Model) 
+            (featureNormalization: PredictionInput -> PredictionInput) 
+            (proteome: seq<Fasta.FastaItem<AminoAcids.AminoAcid>>) 
+            (proteinsOfInterest: seq<Fasta.FastaItem<AminoAcids.AminoAcid>>)  
+            
+            =
+
             printfn "Determining distinct peptides..."
             //only uniquely mapping peptides in the given proteome will be considered candidate peptides.
             let distinctPeptides = Classification.getDistinctTrypticPeptidesFromFasta proteome
@@ -785,7 +794,7 @@ module DPPOP =
                                         let protId = protein.Header
                                         //uniquely mapping digested peptides
                                         let digested =
-                                            Classification.digestTryptic protein.Sequence
+                                            Classification.digestTryptic (Array.ofSeq protein.Sequence)
                                             |> Seq.map (fun x -> BioArray.toString x)
                                             |> List.ofSeq
                                         let candidatePeptides = 
@@ -804,9 +813,9 @@ module DPPOP =
                 )
 
         ///Returns relative observability scores for uniquely mapping peptides of proteins of interest using dppops plant model and feature normalization procedure, given the proteome of the organism.
-        let scoreDppopPlant (proteome: seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>) (proteinsOfInterest: seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>) =
+        let scoreDppopPlant (proteome: seq<Fasta.FastaItem<AminoAcids.AminoAcid>>) (proteinsOfInterest: seq<Fasta.FastaItem<AminoAcids.AminoAcid>>) =
             scoreProteinsAgainstProteome Model.Plant Classification.zNormalizePlantFeatureVector proteome proteinsOfInterest
 
         ///Returns relative observability scores for uniquely mapping peptides of proteins of interest using dppops non-plant model and feature normalization procedure, given the proteome of the organism.
-        let scoreDppopNonPlant (proteome: seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>) (proteinsOfInterest: seq<FastA.FastaItem<BioArray<AminoAcids.AminoAcid>>>) =
+        let scoreDppopNonPlant (proteome: seq<Fasta.FastaItem<AminoAcids.AminoAcid>>) (proteinsOfInterest: seq<Fasta.FastaItem<AminoAcids.AminoAcid>>) =
             scoreProteinsAgainstProteome Model.NonPlant Classification.zNormalizeNonPlantFeatureVector proteome proteinsOfInterest
