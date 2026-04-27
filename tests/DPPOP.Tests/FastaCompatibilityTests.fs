@@ -6,35 +6,42 @@ open Xunit
 open BioFSharp
 open DPPOP.CLI
 
-module private TestPaths =
+module private FastaCompatibilityTestData =
 
-    let repoRoot =
-        Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."))
+    let withTemporaryFasta contents run =
+        let tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.fasta")
 
-    let testFasta =
-        Path.Combine(repoRoot, "src", "BioFSharp.ML", "Resources", "test.fasta")
+        try
+            File.WriteAllText(tempPath, contents)
+            run tempPath
+        finally
+            if File.Exists(tempPath) then
+                File.Delete(tempPath)
 
 type FastaCompatibilityTests() =
 
     [<Fact>]
     member _.``CLI input sanitation removes illegal characters and reports them`` () =
-        Assert.True(
-            File.Exists(TestPaths.testFasta),
-            $"Expected test FASTA at '{TestPaths.testFasta}'."
-        )
+        let fastaContents =
+            String.concat
+                Environment.NewLine
+                [|
+                    ">test-protein"
+                    "MDATSKADLPDYAADNRLPPWLLPDQEGKPAGRHLHYRPDILLIPSISLAAALNPDFVVLPSERDTIHIIEAGYTADTNHAAKQHEKAQQQQALAADLREAGWKVQYTPQSAISLGFAGTIRKDLHPLLTSLPTKPGSAATPYTTTQSPPSTT-LS*"
+                |]
 
-        let result = Input.readFastaWithSanitation TestPaths.testFasta
+        FastaCompatibilityTestData.withTemporaryFasta fastaContents <| fun fastaPath ->
+            let result = Input.readFastaWithSanitation fastaPath
 
-        Assert.True(result.EncounteredIllegalCharacters)
-        Assert.Single(result.Entries) |> ignore
+            Assert.True(result.EncounteredIllegalCharacters)
 
-        let sanitizedSequence =
-            result.Entries
-            |> Array.exactlyOne
-            |> fun entry -> entry.Sequence
-            |> Array.ofSeq
-            |> BioArray.toString
+            let entry = Assert.Single(result.Entries)
 
-        Assert.DoesNotContain("*", sanitizedSequence)
-        Assert.DoesNotContain("-", sanitizedSequence)
-        Assert.EndsWith("TTLS", sanitizedSequence)
+            let sanitizedSequence =
+                entry.Sequence
+                |> Array.ofSeq
+                |> BioArray.toString
+
+            Assert.DoesNotContain("*", sanitizedSequence)
+            Assert.DoesNotContain("-", sanitizedSequence)
+            Assert.EndsWith("TTLS", sanitizedSequence)
