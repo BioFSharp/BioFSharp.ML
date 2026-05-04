@@ -22,6 +22,26 @@ Run it with mounted input data under `/data`:
 docker run --rm --mount "type=bind,source=C:/my-data,target=/data" dppop --proteome /data/proteome.fasta --proteins-of-interest /data/targets.fasta --output /data/results.tsv
 ```
 
+### Local container smoke test
+
+From the repository root, build the image and run it against the checked-in
+container fixtures:
+
+```powershell
+docker build -t dppop:local .
+
+docker run --rm `
+  --mount "type=bind,source=${PWD}\tests\Container\data,target=/data" `
+  dppop:local `
+  --proteome /data/Chlamy_JGI5_5.fasta `
+  --proteins-of-interest /data/rbcl.fasta `
+  --model plant `
+  --output /data/dppop-results.tsv
+```
+
+The command mounts `tests/Container/data` as writable so the output TSV is
+created next to the two input FASTA files.
+
 ### Notes
 
 - `--model` controls the normalization profile and accepts `plant` or `nonplant`.
