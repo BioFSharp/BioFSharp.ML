@@ -19,7 +19,7 @@ docker build -t dppop .
 Run it with mounted input data under `/data`:
 
 ```powershell
-docker run --rm --mount type=bind,source="C:/my-data",target=/data dppop --proteome /data/proteome.fasta --proteins-of-interest /data/targets.fasta --output /data/results.tsv
+docker run --rm --mount "type=bind,source=C:/my-data,target=/data" dppop --proteome /data/proteome.fasta --proteins-of-interest /data/targets.fasta --output /data/results.tsv
 ```
 
 ### Notes

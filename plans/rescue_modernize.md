@@ -1,5 +1,18 @@
 # Rescue and Modernization Plan for iMLP and DPPOP
 
+Status: implemented for the BioFSharp.ML DPPOP rescue/containerization scope.
+
+Implemented artifacts in this repository:
+
+- `scripts/Export-ImlpLegacyRuntime.ps1` exports the CNTK/OpenMPI runtime from `csbdocker/imlp:1.0.0`.
+- `artifacts/legacy-runtime/imlp-1.0.0/legacy-runtime.tar.gz` has been rescued on this machine.
+- `artifacts/legacy-runtime/imlp-1.0.0/runtime-manifest.json` records the image digest, extracted paths, and runtime environment variables.
+- `artifacts/legacy-runtime/imlp-1.0.0/SHA256SUMS` records checksums for the rescued payload.
+- `src/DPPOP.CLI` provides the compiled DPPOP command-line application.
+- `Dockerfile` builds the DPPOP container using the rescued legacy runtime archive.
+- `tests/DPPOP.Tests` covers DPPOP CLI/input compatibility behavior.
+- `AGENTS.md` documents the repository workflow and legacy runtime procedure for future agents.
+
 ## Ground truth
 
 The following points are based on inspection of the current repositories and the local Docker image state.
@@ -17,6 +30,12 @@ The following points are based on inspection of the current repositories and the
 - `BioFSharp.ML` still references `CNTK.CPUOnly 2.8.0-rc0.dev20200201`.
 
 ## Goals
+
+Implementation status:
+
+- Goal 1 is implemented for the local rescue artifact.
+- Goal 3 is implemented for DPPOP CLI/containerization.
+- Goals 2, 4, and 5 remain cross-repository or optional follow-up work for iMLP/ONNX.
 
 1. Rescue the legacy CNTK runtime so both projects remain buildable and deployable.
 2. Keep `iMLP` operational while moving it to a more modern .NET toolchain.

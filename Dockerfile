@@ -18,7 +18,7 @@ RUN tar -xzf /tmp/legacy-runtime.tar.gz -C / \
 ENV PATH="/usr/local/cntk/cntk/lib:/usr/local/mpi/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cntk/cntk/dependencies/lib:/usr/local/cntk/cntk/lib:/usr/local/mpi/lib:${LD_LIBRARY_PATH}"
 
-WORKDIR /data
+WORKDIR /app
 COPY --from=build /app/publish ./
 
 ENTRYPOINT ["dotnet", "DPPOP.CLI.dll"]
