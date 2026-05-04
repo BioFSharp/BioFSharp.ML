@@ -74,13 +74,13 @@ LD_LIBRARY_PATH=/usr/local/cntk/cntk/dependencies/lib:/usr/local/cntk/cntk/lib:/
 After publishing/pulling the base image `csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10`, build the DPPOP container from the repository root:
 
 ```powershell
-docker build -t dppop .
+docker build -t csbdocker/dppop .
 ```
 
 Run it with input files mounted under `/data`:
 
 ```powershell
-docker run --rm --mount "type=bind,source=C:/my-data,target=/data" dppop --proteome /data/proteome.fasta --proteins-of-interest /data/targets.fasta --model nonplant --output /data/results.tsv
+docker run --rm --mount "type=bind,source=C:/my-data,target=/data" csbdocker/dppop --proteome /data/proteome.fasta --proteins-of-interest /data/targets.fasta --model nonplant --output /data/results.tsv
 ```
 
 ## Development Notes

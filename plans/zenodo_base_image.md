@@ -217,8 +217,8 @@ This deletes the entire `apt-get install libnuma1` + `tar -xzf legacy-runtime.ta
 ### Acceptance
 
 - `.\build.cmd RunTests` (per [AGENTS.md](AGENTS.md)) passes locally on a .NET 10 SDK.
-- `docker build -t dppop .` (using the published base from Docker Hub) succeeds with no local `artifacts/` content present.
-- `docker run --rm --mount type=bind,source=...,target=/data dppop --proteome ... --proteins-of-interest ... --model nonplant --output /data/results.tsv` produces output matching the existing golden tests in [tests/DPPOP.Tests](tests/DPPOP.Tests).
+- `docker build -t csbdocker/dppop .` (using the published base from Docker Hub) succeeds with no local `artifacts/` content present.
+- `docker run --rm --mount type=bind,source=...,target=/data csbdocker/dppop --proteome ... --proteins-of-interest ... --model nonplant --output /data/results.tsv` produces output matching the existing golden tests in [tests/DPPOP.Tests](tests/DPPOP.Tests).
 
 ---
 

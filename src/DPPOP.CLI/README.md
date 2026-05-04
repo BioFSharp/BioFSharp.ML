@@ -13,13 +13,13 @@ dppop --proteome proteome.fasta --proteins-of-interest targets.fasta --model non
 Build the container from the repository root after publishing or pulling the CNTK/.NET base image:
 
 ```powershell
-docker build -t dppop .
+docker build -t csbdocker/dppop .
 ```
 
 Run it with mounted input data under `/data`:
 
 ```powershell
-docker run --rm --mount "type=bind,source=C:/my-data,target=/data" dppop --proteome /data/proteome.fasta --proteins-of-interest /data/targets.fasta --output /data/results.tsv
+docker run --rm --mount "type=bind,source=C:/my-data,target=/data" csbdocker/dppop --proteome /data/proteome.fasta --proteins-of-interest /data/targets.fasta --output /data/results.tsv
 ```
 
 ### Local container smoke test
