@@ -10,7 +10,7 @@ dppop --proteome proteome.fasta --proteins-of-interest targets.fasta --model non
 
 ## Container
 
-Build the container from the repository root after exporting the legacy runtime archive:
+Build the container from the repository root after publishing or pulling the CNTK/.NET base image:
 
 ```powershell
 docker build -t dppop .
@@ -26,4 +26,4 @@ docker run --rm --mount "type=bind,source=C:/my-data,target=/data" dppop --prote
 
 - `--model` controls the normalization profile and accepts `plant` or `nonplant`.
 - `--custom-model` can point to a custom CNTK model file while keeping the selected normalization profile.
-- CNTK native dependencies are still required at runtime.
+- CNTK native dependencies are supplied by the `csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10` base image.

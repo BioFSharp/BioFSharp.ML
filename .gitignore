@@ -61,6 +61,8 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+zenodo-record/
+docker/base/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
