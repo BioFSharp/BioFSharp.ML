@@ -8,7 +8,7 @@ open DPPOP.CLI
 
 module private FastaCompatibilityTestData =
 
-    let withTemporaryFasta contents run =
+    let withTemporaryFasta (contents: string) run =
         let tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.fasta")
 
         try
