@@ -25,7 +25,8 @@ docker run --rm --mount "type=bind,source=C:/my-data,target=/data" csbdocker/dpp
 ### Local container smoke test
 
 From the repository root, build the image and run it against the checked-in
-container fixtures:
+container fixtures. `Chlamy_JGI5_5.fasta` is the proteome; `rbcl.fasta` is
+the target proteins/proteins-of-interest FASTA.
 
 ```powershell
 docker build -t dppop:local .
