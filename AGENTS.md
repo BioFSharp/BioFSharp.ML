@@ -39,7 +39,7 @@ CNTK is a preserved legacy dependency. Treat it as runtime infrastructure to res
 The rescued runtime is now archived in the Zenodo record:
 
 ```text
-https://doi.org/10.5281/zenodo.20025320
+https://doi.org/10.5281/zenodo.20026836
 ```
 
 The local extraction script is retained as provenance/recovery tooling:

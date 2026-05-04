@@ -93,13 +93,13 @@ artifacts/legacy-runtime/imlp-1.0.0/
 
 ## Phase A — Publish rescued runtime to Zenodo
 
-Status: implemented. The 647 MB archive plus its manifest and checksums were published as Zenodo record `20025320`.
+Status: implemented. The 647 MB archive plus its manifest and checksums were published as Zenodo record `20026836`.
 
 Published metadata:
-- Version DOI: <https://doi.org/10.5281/zenodo.20025320>
+- Version DOI: <https://doi.org/10.5281/zenodo.20026836>
 - Concept DOI: <https://doi.org/10.5281/zenodo.20025319>
-- Record URL: <https://zenodo.org/records/20025320>
-- Runtime file URL: <https://zenodo.org/api/records/20025320/files/legacy-runtime.tar.gz/content>
+- Record URL: <https://zenodo.org/records/20026836>
+- Runtime file URL: <https://zenodo.org/api/records/20026836/files/legacy-runtime.tar.gz/content>
 - Runtime SHA256: `f7e60cf2889aa2315bea989c3e3b86fdc70b75d2df0269fed4e4b93dd94bd4ed`
 - Base-image source directory: ignored local [zenodo-record/](../zenodo-record/) staging directory and published Zenodo files.
 
@@ -124,7 +124,7 @@ The historical procedure is retained below for future versioned re-publication.
 5. Publish. Record both:
    - **Concept DOI** (resolves to the latest version forever — use in human-readable docs)
    - **Version DOI** (immutable — use in Dockerfile pin)
-6. Capture the **direct file URL** for `legacy-runtime.tar.gz` (for this record: `https://zenodo.org/api/records/20025320/files/legacy-runtime.tar.gz/content`).
+6. Capture the **direct file URL** for `legacy-runtime.tar.gz` (for this record: `https://zenodo.org/api/records/20026836/files/legacy-runtime.tar.gz/content`).
 7. Keep the published DOI, runtime URL, and SHA256 in this plan. The base Dockerfile itself is preserved in the Zenodo record rather than tracked in this repo.
 
 ### Acceptance
@@ -233,7 +233,7 @@ Build and publish the base image from the ignored local `zenodo-record/` directo
 2. Verify the record payload:
    `sha256sum -c SHA256SUMS`
 3. Build the image:
-   `docker build --platform linux/amd64 --build-arg ZENODO_DOI=10.5281/zenodo.20025320 --build-arg IMAGE_VERSION=1.0.1+cntk2.7 -t csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10 -t csbdocker/cntk-dotnet:cntk2.7-dotnet10 -t csbdocker/cntk-dotnet:dotnet10 -t csbdocker/cntk-dotnet:latest .`
+   `docker build --platform linux/amd64 --build-arg ZENODO_DOI=10.5281/zenodo.20026836 --build-arg IMAGE_VERSION=1.0.1+cntk2.7 -t csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10 -t csbdocker/cntk-dotnet:cntk2.7-dotnet10 -t csbdocker/cntk-dotnet:dotnet10 -t csbdocker/cntk-dotnet:latest .`
 4. Smoke-test the local image:
    `docker run --rm csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10 dotnet --info`
    `docker run --rm csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10 ls /usr/local/cntk/cntk/lib`
@@ -282,11 +282,11 @@ Minimal, in-place edits — no new top-level docs:
 Run in this order; each step gates the next.
 
 1. **Zenodo record reachable**
-   `curl -fL -o /tmp/r.tar.gz https://zenodo.org/api/records/20025320/files/legacy-runtime.tar.gz/content && sha256sum /tmp/r.tar.gz` matches the recorded SHA256.
+   `curl -fL -o /tmp/r.tar.gz https://zenodo.org/api/records/20026836/files/legacy-runtime.tar.gz/content && sha256sum /tmp/r.tar.gz` matches the recorded SHA256.
 2. **Base image context is present**
    `zenodo-record/` contains `Dockerfile`, `legacy-runtime.tar.gz`, `NOTICE.md`, `README.md`, `runtime-manifest.json`, and `SHA256SUMS`.
 3. **Base image builds locally**
-   `cd zenodo-record && docker build --platform linux/amd64 -t local/cntk-dotnet:cntk2.7-dotnet10 --build-arg ZENODO_DOI=10.5281/zenodo.20025320 --build-arg IMAGE_VERSION=1.0.1+cntk2.7 .`
+   `cd zenodo-record && docker build --platform linux/amd64 -t local/cntk-dotnet:cntk2.7-dotnet10 --build-arg ZENODO_DOI=10.5281/zenodo.20026836 --build-arg IMAGE_VERSION=1.0.1+cntk2.7 .`
 4. **CNTK loads under .NET 10**
    `docker run --rm local/cntk-dotnet:cntk2.7-dotnet10 dotnet --info` and `ls /usr/local/cntk/cntk/lib`.
 5. **Tests pass after retarget**
