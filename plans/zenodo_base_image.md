@@ -7,14 +7,14 @@ The current [Dockerfile](Dockerfile) is monolithic: it builds DPPOP and bakes in
 This plan operationalizes **Phase 4** of [plans/rescue_modernize.md](plans/rescue_modernize.md) ("Unify runtime and image layout") and adds two pieces it does not currently cover:
 
 1. A public, citable home for the rescued binaries on **Zenodo** (DOI, versioned, immutable, distributed under a documented multi-license bundle — see Phase 0).
-2. A published **`biofsharp/cntk-dotnet:10`** base image on Docker Hub that any downstream tool (DPPOP, iMLP, future) can `FROM` without owning the rescue procedure.
+2. A published **`csbdocker/cntk-dotnet:dotnet10`** base image on Docker Hub that any downstream tool (DPPOP, iMLP, future) can `FROM` without owning the rescue procedure.
 
-Outcome: `docker pull biofsharp/cntk-dotnet:10-cntk2.7` gives any user a working .NET 10 runtime with CNTK 2.7 + OpenMPI preloaded and `LD_LIBRARY_PATH` configured. The DPPOP image becomes a thin layer on top. Reproduction does not depend on local Docker state.
+Outcome: `docker pull csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10` gives any user a working .NET 10 runtime with CNTK 2.7 + OpenMPI preloaded and `LD_LIBRARY_PATH` configured. The DPPOP image becomes a thin layer on top. Reproduction does not depend on local Docker state.
 
 User decisions (locked):
 - Base image is **runtime-only** (`mcr.microsoft.com/dotnet/runtime:10.0`).
-- DPPOP.CLI **retargets to `net10.0`**; [src/BioFSharp.ML/BioFSharp.ML.fsproj](src/BioFSharp.ML/BioFSharp.ML.fsproj) stays on `netstandard2.0`.
-- Zenodo is the canonical source; local archive remains usable via an opt-in build ARG for offline/dev builds.
+- DPPOP.CLI **targets `net10.0`**; [src/BioFSharp.ML/BioFSharp.ML.fsproj](src/BioFSharp.ML/BioFSharp.ML.fsproj) stays on `netstandard2.0`.
+- Zenodo is the canonical source and contains the base-image Dockerfile; this repo consumes the published Docker Hub base image and does not track a separate base Dockerfile.
 - The rescued archive is **not** a single-licensed CNTK+OpenMPI bundle. It contains ~12 third-party native libraries with mixed licenses; redistribution requires a `NOTICE.md` enumerating each component (see Phase 0).
 
 ---
@@ -93,7 +93,17 @@ artifacts/legacy-runtime/imlp-1.0.0/
 
 ## Phase A — Publish rescued runtime to Zenodo
 
-The 647 MB archive plus its manifest and checksums become a Zenodo record. This must happen first; everything downstream pins the resulting URL + SHA256.
+Status: implemented. The 647 MB archive plus its manifest and checksums were published as Zenodo record `20025320`.
+
+Published metadata:
+- Version DOI: <https://doi.org/10.5281/zenodo.20025320>
+- Concept DOI: <https://doi.org/10.5281/zenodo.20025319>
+- Record URL: <https://zenodo.org/records/20025320>
+- Runtime file URL: <https://zenodo.org/api/records/20025320/files/legacy-runtime.tar.gz/content>
+- Runtime SHA256: `f7e60cf2889aa2315bea989c3e3b86fdc70b75d2df0269fed4e4b93dd94bd4ed`
+- Base-image source directory: ignored local [zenodo-record/](../zenodo-record/) staging directory and published Zenodo files.
+
+The historical procedure is retained below for future versioned re-publication.
 
 ### Steps
 
@@ -106,67 +116,71 @@ The 647 MB archive plus its manifest and checksums become a Zenodo record. This 
    - `NOTICE.md` (produced in Phase 0 — must accompany the tarball on Zenodo)
    - A short `README.md` (write inline in the deposition) describing: source image digest `csbdocker/imlp@sha256:c5781e2a198c7281e9fd4d46bff385c3f2c13b8eaa56538bc598f4bd249fdc34`, paths covered (`/usr/local/cntk/cntk/lib`, `/usr/local/cntk/cntk/dependencies/lib`, `/usr/local/mpi/lib`), required env vars, target platform `linux/amd64`, and a pointer to `NOTICE.md` for the full multi-license breakdown.
 4. Metadata:
-   - **Title**: "Rescued CNTK 2.7 + OpenMPI runtime libraries (Linux x86_64) for BioFSharp.ML / DPPOP / iMLP"
+   - **Title**: "cntk-dotnet: docker runtime image base for running legacy cntk inference with .NET applications"
    - **Authors**: pull from [RELEASE_NOTES.md](RELEASE_NOTES.md) (Mühlhaus, Zimmer, Schneider).
    - **License**: select **"Other (Open)"** in Zenodo's license picker (Zenodo only allows one SPDX value per record; the archive bundles MIT, BSD-3-Clause, Apache-2.0, and Intel proprietary-but-redistributable components, so no single SPDX is honest). Reference `NOTICE.md` from the description as the authoritative license document. Do **not** label the record "MIT" alone — that would misrepresent the Apache-2.0/BSD-3/Intel-licensed components.
    - **Related identifiers**: link to the GitHub repo and to the original CNTK upstream.
-   - **Version**: `1.0.0` (matches the rescued tag `imlp-1.0.0`).
+   - **Version**: `1.0.1+cntk2.7`.
 5. Publish. Record both:
    - **Concept DOI** (resolves to the latest version forever — use in human-readable docs)
    - **Version DOI** (immutable — use in Dockerfile pin)
-6. Capture the **direct file URL** for `legacy-runtime.tar.gz` (Zenodo file URLs follow `https://zenodo.org/records/<id>/files/legacy-runtime.tar.gz`).
-7. Commit a small `docker/base/zenodo.json` to the repo recording: concept DOI, version DOI, direct file URL, expected SHA256, archive size, upload date. This is the source of truth the Dockerfile reads from (via build args set by the workflow).
+6. Capture the **direct file URL** for `legacy-runtime.tar.gz` (for this record: `https://zenodo.org/api/records/20025320/files/legacy-runtime.tar.gz/content`).
+7. Keep the published DOI, runtime URL, and SHA256 in this plan. The base Dockerfile itself is preserved in the Zenodo record rather than tracked in this repo.
 
 ### Acceptance
 
 - Zenodo record is public and resolvable via DOI.
 - `curl -L <file-url> | sha256sum` matches the recorded checksum.
-- `docker/base/zenodo.json` exists and is checked in.
+- The published DOI, runtime URL, and SHA256 are recorded in this plan.
 - The Zenodo record's file list includes `NOTICE.md` alongside the tarball, manifest, and `SHA256SUMS`.
 - The Zenodo record's license field is set to "Other (Open)" and the description links to `NOTICE.md`.
 
 ---
 
-## Phase B — Add `docker/base/Dockerfile` for the .NET 10 + CNTK base image
+## Phase B — Preserve the .NET 10 + CNTK base Dockerfile in Zenodo
 
-### New file: `docker/base/Dockerfile`
+Status: implemented in the Zenodo record, not tracked in this repo.
+
+### File: `zenodo-record/Dockerfile`
 
 Behaviour:
 
-- `FROM mcr.microsoft.com/dotnet/runtime:10.0-jammy-amd64` (jammy = Ubuntu 22.04, glibc compatible with the rescued binaries; **only `linux/amd64`** — CNTK has no aarch64 build).
-- `apt-get install --no-install-recommends libnuma1 ca-certificates curl` then clean apt lists (curl needed for Zenodo fetch; can be removed in a final stage if image size matters).
+- `FROM mcr.microsoft.com/dotnet/runtime:10.0` (**build with `--platform linux/amd64`** — CNTK has no aarch64 build).
+- Build context must contain `legacy-runtime.tar.gz`, `libnuma1_2.0.14-3ubuntu2_amd64.deb`, and `NOTICE.md`; the ignored local `zenodo-record/` staging directory contains these files for local publication.
 - Build args:
-  - `ARG ZENODO_FILE_URL` — required, no default in the file (workflow injects it from `zenodo.json`).
-  - `ARG RUNTIME_SHA256` — required, verified after download.
-  - `ARG LOCAL_RUNTIME_TAR=` — optional path inside the build context. If non-empty, `COPY` from there instead of fetching.
+  - `ARG RUNTIME_SHA256` — expected SHA256 for `legacy-runtime.tar.gz`.
+  - `ARG LIBNUMA1_SHA256` — expected SHA256 for the vendored `libnuma1` Debian package.
+  - `ARG ZENODO_DOI` — optional provenance label value.
+  - `ARG IMAGE_VERSION` — OCI image version label value; currently `1.0.1+cntk2.7`.
 - Logic:
-  1. If `LOCAL_RUNTIME_TAR` set → `COPY ${LOCAL_RUNTIME_TAR} /tmp/legacy-runtime.tar.gz`.
-  2. Else → `curl -fL --retry 5 -o /tmp/legacy-runtime.tar.gz "${ZENODO_FILE_URL}"`.
-  3. `echo "${RUNTIME_SHA256}  /tmp/legacy-runtime.tar.gz" | sha256sum -c -` (fail build on mismatch).
-  4. `tar -xzf /tmp/legacy-runtime.tar.gz -C / && rm /tmp/legacy-runtime.tar.gz`.
+  1. `COPY libnuma1_2.0.14-3ubuntu2_amd64.deb /tmp/libnuma1.deb`.
+  2. `echo "${LIBNUMA1_SHA256}  /tmp/libnuma1.deb" | sha256sum -c -` (fail build on mismatch).
+  3. `dpkg -i /tmp/libnuma1.deb && rm /tmp/libnuma1.deb`.
+  4. `COPY legacy-runtime.tar.gz /tmp/legacy-runtime.tar.gz`.
+  5. `COPY NOTICE.md /usr/local/share/cntk-runtime/NOTICE.md`.
+  6. `echo "${RUNTIME_SHA256}  /tmp/legacy-runtime.tar.gz" | sha256sum -c -` (fail build on mismatch).
+  7. `tar -xzf /tmp/legacy-runtime.tar.gz -C / && rm /tmp/legacy-runtime.tar.gz`.
 - Env (carried over from current [Dockerfile:18-19](Dockerfile#L18-L19)):
   - `ENV PATH="/usr/local/cntk/cntk/lib:/usr/local/mpi/bin:${PATH}"`
   - `ENV LD_LIBRARY_PATH="/usr/local/cntk/cntk/dependencies/lib:/usr/local/cntk/cntk/lib:/usr/local/mpi/lib:${LD_LIBRARY_PATH}"`
-- OCI labels: `org.opencontainers.image.source`, `.version`, `.licenses`, plus a custom `org.biofsharp.cntk.zenodo-doi` label set from a `ZENODO_DOI` build arg.
-
-Implementing `LOCAL_RUNTIME_TAR` as an `ARG` requires it to reference a path under the build context; the workflow / dev runs `docker build` with the repo root as context and passes `--build-arg LOCAL_RUNTIME_TAR=artifacts/legacy-runtime/imlp-1.0.0/legacy-runtime.tar.gz`.
+- OCI labels: `org.opencontainers.image.source`, `.url`, `.ref.name`, `.version`, `.licenses`, plus custom `org.csbdocker.cntk.*` labels.
 
 ### Tagging strategy on Docker Hub
 
-Repository: `biofsharp/cntk-dotnet` (assumes the org exists or is created — confirm during Phase D).
+Repository: `csbdocker/cntk-dotnet`.
 
-Tags pushed by the workflow:
-- `10-cntk2.7-1.0.0` — fully pinned, immutable.
-- `10-cntk2.7` — moves with the latest 2.7-on-.NET-10 build.
-- `10` — moves with the latest CNTK build on .NET 10.
+Tags pushed locally from `zenodo-record/`:
+- `1.0.1-cntk2.7-dotnet10` — fully pinned, immutable.
+- `cntk2.7-dotnet10` — moves with the latest CNTK 2.7 on .NET 10 build.
+- `dotnet10` — moves with the latest CNTK-backed .NET 10 build.
 - `latest` — moves with the newest base build overall.
 
 ### Acceptance
 
-- `docker build -f docker/base/Dockerfile --build-arg ZENODO_FILE_URL=... --build-arg RUNTIME_SHA256=... .` succeeds in under ~5 min on a warm cache and without touching local artifacts.
+- `docker build --platform linux/amd64 ... .` succeeds from `zenodo-record/`.
 - `docker run --rm <image> ls /usr/local/cntk/cntk/lib` lists the CNTK shared libs.
 - `docker run --rm <image> dotnet --info` shows .NET 10.
-- Re-running with `--build-arg LOCAL_RUNTIME_TAR=artifacts/legacy-runtime/imlp-1.0.0/legacy-runtime.tar.gz` produces a byte-identical extracted layer (modulo timestamps).
+- Re-running after downloading the same Zenodo payload produces the same extracted runtime layer (modulo timestamps).
 
 ---
 
@@ -174,20 +188,20 @@ Tags pushed by the workflow:
 
 ### Project changes
 
-- [global.json](global.json): bump `sdk.version` from `8.0.100` to the current .NET 10 SDK (e.g. `10.0.100`); keep `rollForward: latestMinor`.
-- [src/DPPOP.CLI/DPPOP.CLI.fsproj:5](src/DPPOP.CLI/DPPOP.CLI.fsproj#L5): `<TargetFramework>net8.0</TargetFramework>` → `net10.0`.
+- [global.json](global.json): keep `sdk.version` on `10.0.100`; keep `rollForward: latestMinor`.
+- [src/DPPOP.CLI/DPPOP.CLI.fsproj:5](src/DPPOP.CLI/DPPOP.CLI.fsproj#L5): use `<TargetFramework>net10.0</TargetFramework>`.
 - [src/BioFSharp.ML/BioFSharp.ML.fsproj](src/BioFSharp.ML/BioFSharp.ML.fsproj): **no change** — `netstandard2.0` is consumed fine by net10.0.
-- Test projects under `tests/` may need a target bump if they were on net8.0; check and apply minimally.
-- Confirm `CNTK.CPUOnly 2.7` still loads under net10.0. The native libs are loaded by P/Invoke against the rescued `.so` files independently of the NuGet, so the risk is the managed `Cntk.Core.Managed-2.7.dll` shim. If it fails on net10, a `<Reference HintPath=...>` to the bundled DLL or a `Microsoft.Windows.Compatibility` shim may be needed; verify in Phase E and treat as a known unknown.
+- Test projects under `tests/` should target net10.0 with the CLI.
+- Confirm `CNTK.CPUOnly 2.7` still loads under net10.0. The native libs are loaded by P/Invoke against the rescued `.so` files independently of the NuGet; verify in Phase E.
 
 ### Refactored top-level [Dockerfile](Dockerfile)
 
 Two stages, both leaning on the new base:
 
 ```
-ARG BASE_IMAGE=biofsharp/cntk-dotnet:10-cntk2.7
+ARG BASE_IMAGE=csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0-jammy-amd64 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet publish src/DPPOP.CLI/DPPOP.CLI.fsproj -c Release -o /app/publish
@@ -208,29 +222,40 @@ This deletes the entire `apt-get install libnuma1` + `tar -xzf legacy-runtime.ta
 
 ---
 
-## Phase D — Publish base image to Docker Hub via GitHub Actions
+## Phase D — Build locally and publish base image to Docker Hub
 
-### New file: `.github/workflows/base-image.yml`
+Build and publish the base image from the ignored local `zenodo-record/` directory after the Zenodo record is public.
 
-- Triggers: `workflow_dispatch` (manual, primary) plus `push` on tags matching `base-image-v*`.
-- Steps:
-  1. Checkout.
-  2. Read `docker/base/zenodo.json` and export URL + SHA + DOI as job env vars.
-  3. `docker/login-action@v3` with `${{ secrets.DOCKERHUB_USERNAME }}` / `${{ secrets.DOCKERHUB_TOKEN }}`.
-  4. `docker/setup-buildx-action@v3`.
-  5. `docker/build-push-action@v6` with `platforms: linux/amd64`, `file: docker/base/Dockerfile`, build-args from step 2, and the four tags listed in Phase B.
-- No multi-arch — CNTK is amd64-only and silent failure on aarch64 would be worse than refusing.
+### Local publish steps
+
+1. Enter the local Zenodo staging directory:
+   `cd zenodo-record`
+2. Verify the record payload:
+   `sha256sum -c SHA256SUMS`
+3. Build the image:
+   `docker build --platform linux/amd64 --build-arg ZENODO_DOI=10.5281/zenodo.20025320 --build-arg IMAGE_VERSION=1.0.1+cntk2.7 -t csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10 -t csbdocker/cntk-dotnet:cntk2.7-dotnet10 -t csbdocker/cntk-dotnet:dotnet10 -t csbdocker/cntk-dotnet:latest .`
+4. Smoke-test the local image:
+   `docker run --rm csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10 dotnet --info`
+   `docker run --rm csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10 ls /usr/local/cntk/cntk/lib`
+5. Log in and push all tags:
+   `docker login`
+   `docker push csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10`
+   `docker push csbdocker/cntk-dotnet:cntk2.7-dotnet10`
+   `docker push csbdocker/cntk-dotnet:dotnet10`
+   `docker push csbdocker/cntk-dotnet:latest`
+
+No multi-arch publish — CNTK is amd64-only and silent failure on aarch64 would be worse than refusing.
 
 ### Pre-publication checklist (one-time, manual)
 
-- Confirm Docker Hub org `biofsharp` exists or create it; provision a robot account / access token; add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to GitHub repo secrets.
-- Verify the workflow on a personal Docker Hub namespace first to avoid burning the canonical tag on a broken build.
+- Confirm Docker Hub org `csbdocker` access and create/confirm the `csbdocker/cntk-dotnet` repository.
+- Confirm Docker Desktop or the local Docker daemon can build `linux/amd64`.
 
 ### Acceptance
 
-- A manual workflow run produces all four tags on Docker Hub.
-- `docker pull biofsharp/cntk-dotnet:10-cntk2.7-1.0.0` works from a clean machine.
-- The pulled image's digest matches the workflow run's reported digest.
+- Local build/push produces all four tags on Docker Hub.
+- `docker pull csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10` works from a clean machine.
+- The pulled image digest matches the local build digest recorded during publication.
 
 ---
 
@@ -238,15 +263,15 @@ This deletes the entire `apt-get install libnuma1` + `tar -xzf legacy-runtime.ta
 
 Minimal, in-place edits — no new top-level docs:
 
-- [AGENTS.md](AGENTS.md) "Container Workflow" and "Legacy CNTK Runtime" sections: replace the rescue-then-build narrative with "pull `biofsharp/cntk-dotnet:10-cntk2.7` then `docker build`"; keep the rescue script documented as the procedure used to *produce* the Zenodo upload, not a per-build prerequisite.
+- [AGENTS.md](AGENTS.md) "Container Workflow" and "Legacy CNTK Runtime" sections: replace the rescue-then-build narrative with "pull `csbdocker/cntk-dotnet:1.0.1-cntk2.7-dotnet10` then `docker build`"; keep the rescue script documented as the procedure used to *produce* the Zenodo upload, not a per-build prerequisite.
 - [plans/rescue_modernize.md](plans/rescue_modernize.md) Phase 4 status: mark implemented and link to Zenodo DOI + Docker Hub repo.
-- [README.md](README.md): add a one-paragraph "Container" section pointing at `biofsharp/cntk-dotnet` and the Zenodo DOI badge.
+- [README.md](README.md): add a one-paragraph "Container" section pointing at `csbdocker/cntk-dotnet` and the Zenodo DOI badge.
 
 ---
 
 ## Critical files
 
-- New: `artifacts/legacy-runtime/imlp-1.0.0/NOTICE.md` (Phase 0), `docker/base/Dockerfile`, `docker/base/zenodo.json`, `.github/workflows/base-image.yml`
+- New: `artifacts/legacy-runtime/imlp-1.0.0/NOTICE.md` (Phase 0), ignored `zenodo-record/Dockerfile` staged and published in Zenodo
 - Modified: `artifacts/legacy-runtime/imlp-1.0.0/SHA256SUMS` (add NOTICE entry), [Dockerfile](Dockerfile), [global.json](global.json), [src/DPPOP.CLI/DPPOP.CLI.fsproj](src/DPPOP.CLI/DPPOP.CLI.fsproj), [AGENTS.md](AGENTS.md), [plans/rescue_modernize.md](plans/rescue_modernize.md), [README.md](README.md)
 - Untouched but referenced: [artifacts/legacy-runtime/imlp-1.0.0/legacy-runtime.tar.gz](artifacts/legacy-runtime/imlp-1.0.0/legacy-runtime.tar.gz) (uploaded as-is to Zenodo), [scripts/Export-ImlpLegacyRuntime.ps1](scripts/Export-ImlpLegacyRuntime.ps1) (still the canonical procedure to regenerate the archive if the source image is ever re-rescued).
 
@@ -257,30 +282,28 @@ Minimal, in-place edits — no new top-level docs:
 Run in this order; each step gates the next.
 
 1. **Zenodo record reachable**
-   `curl -fL -o /tmp/r.tar.gz "<file_url>" && sha256sum /tmp/r.tar.gz` matches `zenodo.json`.
-2. **Base image builds from Zenodo**
-   `docker build -f docker/base/Dockerfile -t local/cntk-dotnet:10 --build-arg ZENODO_FILE_URL=... --build-arg RUNTIME_SHA256=... .`
-3. **Base image builds from local fallback**
-   Same command with `--build-arg LOCAL_RUNTIME_TAR=artifacts/legacy-runtime/imlp-1.0.0/legacy-runtime.tar.gz`.
+   `curl -fL -o /tmp/r.tar.gz https://zenodo.org/api/records/20025320/files/legacy-runtime.tar.gz/content && sha256sum /tmp/r.tar.gz` matches the recorded SHA256.
+2. **Base image context is present**
+   `zenodo-record/` contains `Dockerfile`, `legacy-runtime.tar.gz`, `NOTICE.md`, `README.md`, `runtime-manifest.json`, and `SHA256SUMS`.
+3. **Base image builds locally**
+   `cd zenodo-record && docker build --platform linux/amd64 -t local/cntk-dotnet:cntk2.7-dotnet10 --build-arg ZENODO_DOI=10.5281/zenodo.20025320 --build-arg IMAGE_VERSION=1.0.1+cntk2.7 .`
 4. **CNTK loads under .NET 10**
-   `docker run --rm local/cntk-dotnet:10 dotnet --info` and `ls /usr/local/cntk/cntk/lib`.
+   `docker run --rm local/cntk-dotnet:cntk2.7-dotnet10 dotnet --info` and `ls /usr/local/cntk/cntk/lib`.
 5. **Tests pass after retarget**
    `.\build.cmd RunTests` on a host with .NET 10 SDK installed.
 6. **DPPOP image builds on top of the base**
-   `docker build --build-arg BASE_IMAGE=local/cntk-dotnet:10 -t dppop:local .`
+   `docker build --build-arg BASE_IMAGE=local/cntk-dotnet:cntk2.7-dotnet10 -t dppop:local .`
 7. **DPPOP smoke test against existing fixtures**
    `docker run --rm --mount type=bind,source=$PWD/tests/Container/data,target=/data dppop:local --proteome /data/Chlamy_JGI5_5.fasta --proteins-of-interest /data/<targets> --model plant --output /data/results.tsv`; diff against the golden TSV used by [tests/DPPOP.Tests](tests/DPPOP.Tests).
-8. **Workflow dry-run**
-   Trigger `base-image.yml` against a personal Docker Hub namespace; confirm tags + digest.
-9. **Public publish**
-   Re-run the workflow against `biofsharp/cntk-dotnet`; pull from a clean machine and re-run step 7 against the published base.
+8. **Public publish**
+   Push `csbdocker/cntk-dotnet:{1.0.1-cntk2.7-dotnet10,cntk2.7-dotnet10,dotnet10,latest}`; pull from a clean machine and re-run step 7 against the published base.
 
 ---
 
 ## Risks and known unknowns
 
-- **CNTK 2.7 managed shim under .NET 10** — never tested. If `Cntk.Core.Managed-2.7.dll` (built against an older runtime) fails to load, expect to add a binding redirect or a small interop shim. Discoverable at step 4/5.
-- **Docker Hub org access** — the `biofsharp` namespace may need to be claimed/configured. Phase D depends on this.
+- **CNTK 2.7 managed shim under .NET 10** — verify before publishing. If `Cntk.Core.Managed-2.7.dll` fails to load, expect to add a binding redirect or a small interop shim. Discoverable at step 4/5.
+- **Docker Hub org access** — the `csbdocker` namespace must be available to the publishing credentials. Phase D depends on this.
 - **Zenodo Software upload size** — 647 MB is well under the 50 GB per-record limit; no issue, but uploads over ~100 MB go via the new files API and a slow connection could take a while.
 - **amd64-only** — explicit and intentional; documented in the base image labels and in the README.
 - **Intel MKL-ML / `libiomp5` redistribution terms** — these are the only proprietary components in the archive. Microsoft shipped them in the public CNTK 2.7 Linux release under Intel's runtime redistribution grant; redistributing the same unmodified files via Zenodo is the same kind of redistribution. The risk is low but non-zero, and is mitigated by reproducing the full Intel license texts verbatim in `NOTICE.md` (Phase 0). If at any point a redistribution objection is raised, the fallback is to strip those two files from the archive at the cost of CNTK math performance.
